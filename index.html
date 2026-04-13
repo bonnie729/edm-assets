@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SurveyCake EDM Builder</title>
+<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/bonnie729/edm-assets/main/Favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --p:#3DBA90;--pd:#009974;--pl:#E6F7F1;
+  --g900:#333;--g800:#3F3F3F;--g700:#454545;--g600:#6B6B6B;
+  --g500:#989898;--g300:#BDBDBD;--g150:#E3E3E3;--g100:#EEEEEE;--g75:#FAFAFA;
+  --sec-dark:#11303C;--warn:#FEF2DD;--err:#FDE5E9;
+  --font:'Noto Sans TC','Microsoft JhengHei',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--g75);color:var(--g900);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─ header ─ */
+.hdr{height:54px;background:#fff;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;padding:0 20px;flex-shrink:0;z-index:10;gap:12px}
+.hdr-left{display:flex;align-items:center;gap:10px}
+#hdr-logo{height:32px;display:block}
+.hdr-sep{width:1px;height:22px;background:var(--g150)}
+.hdr-tag{font-family:'Roboto',sans-serif;font-weight:700;font-size:14px;color:var(--sec-dark);letter-spacing:.3px}
+.hdr-badge{background:var(--pl);color:var(--pd);font-size:11px;font-weight:700;padding:3px 10px;border-radius:60px;letter-spacing:.4px}
+.hdr-hint{font-size:12px;color:var(--g500)}
+
+/* ─ layout ─ */
+.body{display:flex;flex:1;overflow:hidden}
+
+/* ─ sidebar ─ */
+.sb{width:272px;min-width:272px;background:#fff;border-right:1px solid var(--g100);display:flex;flex-direction:column;overflow-y:auto}
+.sb-section{padding:16px 16px 12px;border-bottom:1px solid var(--g100)}
+.sb-title{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--g500);margin-bottom:12px}
+.btc{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--g100);border-radius:8px;margin-bottom:7px;cursor:pointer;transition:all .14s;background:#fff}
+.btc:hover{border-color:var(--p);background:var(--pl)}
+.btc:last-child{margin-bottom:0}
+.btc-ico{width:34px;height:34px;background:var(--g75);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.btc-info{flex:1;min-width:0}
+.btc-name{font-size:13px;font-weight:600;color:var(--g700)}
+.btc-desc{font-size:11px;color:var(--g500);margin-top:1px}
+.btc-add{width:26px;height:26px;background:var(--pl);color:var(--pd);border:none;border-radius:50%;font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s}
+.btc-add:hover{background:var(--p);color:#fff}
+.sb-foot{padding:14px;border-top:1px solid var(--g100);margin-top:auto}
+.btn-gen{width:100%;background:var(--p);color:#fff;border:none;padding:13px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:background .14s}
+.btn-gen:hover{background:var(--pd)}
+
+/* ─ canvas ─ */
+.canvas{flex:1;overflow-y:auto;padding:20px;background:var(--g75)}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--g500);text-align:center;gap:10px}
+.empty-ico{font-size:48px}
+.empty-ttl{font-size:17px;font-weight:600;color:var(--g700)}
+.empty-sub{font-size:13px}
+
+/* ─ block cards ─ */
+.blk{background:#fff;border:1px solid var(--g100);border-radius:10px;margin-bottom:14px;overflow:hidden}
+.blk:hover{border-color:var(--g300)}
+.blk.collapsed .blk-body{display:none}
+.blk-hdr{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--g75);border-bottom:1px solid var(--g100);cursor:pointer;user-select:none}
+.blk-ico{font-size:16px}.blk-name{font-size:13px;font-weight:700;color:var(--g700);flex:1}
+.blk-acts{display:flex;gap:4px}
+.bb{width:26px;height:26px;border:1px solid var(--g150);background:#fff;border-radius:4px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;color:var(--g600);transition:all .12s}
+.bb:hover{border-color:var(--p);color:var(--p)}
+.bb.del:hover{border-color:#EE415D;color:#EE415D}
+.chevron{color:var(--g500);font-size:11px;margin-left:2px}
+.blk-body{padding:18px}
+
+/* ─ forms ─ */
+.fr{margin-bottom:14px}.fr:last-child{margin-bottom:0}
+.fl{display:block;font-size:11px;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.fi,.fta{width:100%;font-family:var(--font);font-size:13px;color:var(--g900);background:#fff;border:1px solid var(--g150);border-radius:4px;padding:8px 11px;outline:none;transition:border-color .14s}
+.fi:focus,.fta:focus{border-color:var(--p);box-shadow:0 0 0 2px rgba(61,186,144,.14)}
+.fta{resize:vertical;min-height:70px;line-height:1.6}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.upld{border:1.5px dashed var(--g300);border-radius:4px;padding:12px;text-align:center;cursor:pointer;transition:all .14s;background:var(--g75);display:block;position:relative}
+.upld:hover{border-color:var(--p);background:var(--pl)}
+.upld input[type=file]{display:none}
+.upld-txt{font-size:12px;color:var(--g500)}
+.upld-hint{font-size:11px;color:var(--g500);margin-top:3px}
+.upld-prev{max-width:100%;max-height:100px;border-radius:4px;margin:7px auto 0;display:block}
+.divl{display:flex;align-items:center;gap:8px;margin:6px 0 14px}
+.divl-l{flex:1;height:1px;background:var(--g100)}
+.divl-t{font-size:10px;color:var(--g500);white-space:nowrap;letter-spacing:.4px}
+
+/* ─ feature items ─ */
+.fitem{border:1px solid var(--g100);border-radius:7px;margin-bottom:10px;overflow:hidden}
+.fitem-hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--g75);border-bottom:1px solid var(--g100)}
+.fitem-lbl{font-size:12px;font-weight:600;color:var(--g600)}
+.fitem-del{background:none;border:none;cursor:pointer;color:var(--g500);font-size:15px;padding:1px 5px;border-radius:4px;transition:all .12s}
+.fitem-del:hover{color:#EE415D;background:#FDE5E9}
+.fitem-body{padding:12px}
+.btn-add-fi{display:flex;align-items:center;justify-content:center;gap:5px;padding:9px;background:var(--pl);color:var(--pd);border:1.5px dashed var(--p);border-radius:5px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;width:100%;margin-top:10px;transition:all .14s}
+.btn-add-fi:hover{background:var(--p);color:#fff;border-style:solid}
+
+/* ─ pricing editor ─ */
+.pc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pc-card{border:1px solid var(--g100);border-radius:7px;overflow:hidden}
+.pc-hdr{padding:7px 10px;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.pc-hdr img{height:18px}
+.pc-hdr.pro{background:var(--pl);color:var(--pd)}
+.pc-hdr.team{background:var(--warn);color:#B07800}
+.pc-hdr.ent{background:var(--err);color:#C9354D}
+.pc-bd{padding:10px}
+
+/* ─ footer preview ─ */
+.footer-prev{background:var(--g75);border:1px dashed var(--g300);border-radius:6px;padding:14px;text-align:center;color:var(--g600);font-size:12px;line-height:1.7}
+.footer-prev strong{color:var(--g800)}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-left">
+    <img id="hdr-logo" alt="SurveyCake">
+    <div class="hdr-sep"></div>
+    <span class="hdr-tag">EDM Builder</span>
+    <span class="hdr-badge">v2.0</span>
+  </div>
+  <span class="hdr-hint">從左側新增區塊 → 填入內容 → 按「生成 EDM」下載 HubSpot 相容 HTML</span>
+</header>
+
+<div class="body">
+<aside class="sb">
+  <div class="sb-section" style="padding-bottom:0">
+    <div class="sb-title" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--g100)" onclick="toggleImgCfg()">
+      <span>圖片連結設定</span><span id="imgcfg-chev" style="font-size:11px;color:var(--g500);transition:transform .15s">▶</span>
+    </div>
+    <div id="imgcfg-body" style="display:none;padding-bottom:14px">
+      <div class="fr"><label class="fl" style="font-size:9px">Logo</label><input class="fi" style="font-size:11px" type="url" id="cfg-logo" placeholder="https://" oninput="updateIMG('LOGO',this.value)"></div>
+      <div class="fr"><label class="fl" style="font-size:9px">方案卡 PRO Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-pro" placeholder="https://" oninput="updateIMG('PRO',this.value)"></div>
+      <div class="fr"><label class="fl" style="font-size:9px">方案卡 TEAM Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-team" placeholder="https://" oninput="updateIMG('TEAM',this.value)"></div>
+      <div class="fr"><label class="fl" style="font-size:9px">方案卡 ENT Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-ent" placeholder="https://" oninput="updateIMG('ENT',this.value)"></div>
+      <div class="fr"><label class="fl" style="font-size:9px">Facebook Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-fb" placeholder="https://" oninput="updateIMG('FB',this.value)"></div>
+      <div class="fr"><label class="fl" style="font-size:9px">Instagram Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-ig" placeholder="https://" oninput="updateIMG('IG',this.value)"></div>
+      <div class="fr"><label class="fl" style="font-size:9px">YouTube Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-yt" placeholder="https://" oninput="updateIMG('YT',this.value)"></div>
+      <div class="fr" style="margin:0"><label class="fl" style="font-size:9px">LinkedIn Icon</label><input class="fi" style="font-size:11px" type="url" id="cfg-li" placeholder="https://" oninput="updateIMG('LI',this.value)"></div>
+    </div>
+  </div>
+  <div class="sb-section">
+    <div class="sb-title">區塊元件庫</div>
+    <div class="btc" onclick="addBlock('hero')">
+      <div class="btc-ico">🏠</div>
+      <div class="btc-info"><div class="btc-name">Hero 區塊</div><div class="btc-desc">Logo、標題、圖片、CTA 按鈕</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('hero')">+</button>
+    </div>
+    <div class="btc" onclick="addBlock('fcenter')">
+      <div class="btc-ico">📄</div>
+      <div class="btc-info"><div class="btc-name">功能介紹（置中）</div><div class="btc-desc">標題、內文、連結（可多項）</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('fcenter')">+</button>
+    </div>
+    <div class="btc" onclick="addBlock('fside')">
+      <div class="btc-ico">🖼️</div>
+      <div class="btc-info"><div class="btc-name">功能介紹（圖文並排）</div><div class="btc-desc">圖片 + 標題、內文、連結</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('fside')">+</button>
+    </div>
+    <div class="btc" onclick="addBlock('pricing')">
+      <div class="btc-ico">💳</div>
+      <div class="btc-info"><div class="btc-name">方案卡片</div><div class="btc-desc">PRO / TEAM / ENTERPRISE</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('pricing')">+</button>
+    </div>
+    <div class="btc" onclick="addBlock('support')">
+      <div class="btc-ico">💬</div>
+      <div class="btc-info"><div class="btc-name">支援卡片</div><div class="btc-desc">標題、內文、兩個連結</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('support')">+</button>
+    </div>
+    <div class="btc" onclick="addBlock('footer')">
+      <div class="btc-ico">📋</div>
+      <div class="btc-info"><div class="btc-name">Footer（固定內容）</div><div class="btc-desc">Social、版權、取消訂閱</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('footer')">+</button>
+    </div>
+  </div>
+  <div class="sb-foot">
+    <button class="btn-gen" onclick="generateEDM()">⬇&nbsp; 生成 EDM 並下載</button>
+  </div>
+</aside>
+
+<main class="canvas" id="canvas">
+  <div class="empty" id="empty">
+    <div class="empty-ico">📧</div>
+    <div class="empty-ttl">從左側新增區塊開始建立 EDM</div>
+    <div class="empty-sub">可自由組合區塊並調整順序，最後按「生成 EDM 並下載」</div>
+  </div>
+  <div id="blocks"></div>
+</main>
+</div>
+
+<script>
+// ─ IMAGE CONSTANTS ─────────────────────────────────────────
+let IMG = {
+  LOGO: 'https://raw.githubusercontent.com/bonnie729/edm-assets/main/SurveyCake_Logo.png',
+  PRO:  'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Plan_Pro.png',
+  TEAM: 'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Plan_Team.png',
+  ENT:  'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Plan_ENT.png',
+  FB:   'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Social_FB.png',
+  IG:   'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Social_IG.png',
+  YT:   'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Social_YT.png',
+  LI:   'https://raw.githubusercontent.com/bonnie729/edm-assets/main/Social_LI.png',
+};
+
+// ─ UTILS ──────────────────────────────────────────────────
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function nl2br(s){return esc(s).replace(/\n/g,'<br>')}
+
+// ─ STATE ──────────────────────────────────────────────────
+let blocks=[], bcnt=0, ficnt=100;
+
+const META = {
+  hero:    {name:'Hero 區塊',            ico:'🏠'},
+  fcenter: {name:'功能介紹（置中）',     ico:'📄'},
+  fside:   {name:'功能介紹（圖文並排）', ico:'🖼️'},
+  pricing: {name:'方案卡片',             ico:'💳'},
+  support: {name:'支援卡片',             ico:'💬'},
+  footer:  {name:'Footer（固定）',       ico:'📋'},
+};
+
+const DEFS = {
+  hero:{title:'大標題文字',imgSrc:'',imgAlt:'',body:'內文說明文字，請在此輸入 EDM 的主要說明。',ctaText:'立即開始',ctaUrl:'https://www.surveycake.com'},
+  fcenter:{sTitle:'功能介紹標題',items:[{id:'fi1',subtitle:'功能小標題',body:'功能說明文字',linkText:'了解更多',linkUrl:'https://www.surveycake.com',imgSrc:''}]},
+  fside:{sTitle:'功能區塊標題',items:[{id:'fi1',imgSrc:'',imgAlt:'',subtitle:'功能小標題',body:'功能說明文字',linkText:'了解更多',linkUrl:'https://www.surveycake.com'}]},
+  pricing:{sTitle:'方案區塊標題',ctaText:'查看方案比較',ctaUrl:'https://www.surveycake.com/pricing',cards:[{title:'PRO',body:'進階數據深入分析\n讓填答即刻轉化為實際收益'},{title:'TEAM',body:'啟動協作機制\n結合團隊力量創造 3 倍綜效'},{title:'ENTERPRISE',body:'最高規格資安保護\n多方串接及量身打造客製化'}]},
+  support:{title:'遇到問題，我們在這裡 💪🏻',body:'想先了解不同建立方式？查看問卷設計完整指南，從頭到尾帶你走一遍。\n操作上有任何疑問，後台支援中心隨時可以聯絡我們——不用自己摸索。',l1t:'查看使用教學',l1u:'https://help.surveycake.com',l2t:'前往支援中心',l2u:'https://support.surveycake.com'},
+  footer:{fbUrl:'https://www.facebook.com/surveycake',igUrl:'https://www.instagram.com/surveycake',ytUrl:'https://www.youtube.com/@surveycake',liUrl:'https://www.linkedin.com/company/surveycake',feedbackUrl:'https://www.surveycake.com/feedback',unsubUrl:'{{unsubscribe_url}}'}
+};
+
+// ─ BLOCK MANAGEMENT ───────────────────────────────────────
+function addBlock(type){
+  blocks.push({id:'b'+(++bcnt),type,data:JSON.parse(JSON.stringify(DEFS[type])),open:true});
+  render();
+}
+function removeBlock(id){blocks=blocks.filter(b=>b.id!==id);render()}
+function moveBlock(id,dir){
+  const i=blocks.findIndex(b=>b.id===id);
+  if(dir==='up'&&i>0)[blocks[i-1],blocks[i]]=[blocks[i],blocks[i-1]];
+  else if(dir==='dn'&&i<blocks.length-1)[blocks[i],blocks[i+1]]=[blocks[i+1],blocks[i]];
+  render();
+}
+function toggle(id){const b=blocks.find(b=>b.id===id);if(b)b.open=!b.open;render()}
+function setF(id,key,val){const b=blocks.find(b=>b.id===id);if(b)b.data[key]=val}
+function setFI(bid,fid,key,val){const b=blocks.find(b=>b.id===bid);if(!b)return;const fi=b.data.items.find(i=>i.id===fid);if(fi)fi[key]=val}
+function setPC(bid,idx,key,val){const b=blocks.find(b=>b.id===bid);if(b)b.data.cards[idx][key]=val}
+function addFI(bid){
+  const b=blocks.find(b=>b.id===bid);if(!b)return;
+  const type=b.type;
+  const base=type==='fside'?{id:'fi'+(++ficnt),imgSrc:'',imgAlt:'',subtitle:'功能小標題',body:'功能說明文字',linkText:'了解更多',linkUrl:'https://www.surveycake.com'}:{id:'fi'+(++ficnt),subtitle:'功能小標題',body:'功能說明文字',linkText:'了解更多',linkUrl:'https://www.surveycake.com',imgSrc:''};
+  b.data.items.push(base);render();
+}
+function delFI(bid,fid){
+  const b=blocks.find(b=>b.id===bid);
+  if(!b||b.data.items.length<=1)return;
+  b.data.items=b.data.items.filter(i=>i.id!==fid);render();
+}
+
+// ─ IMAGE URL HELPERS ─────────────────────────────────────
+function toggleImgCfg(){
+  const b=document.getElementById('imgcfg-body');
+  const c=document.getElementById('imgcfg-chev');
+  const open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  c.style.transform=open?'rotate(0deg)':'rotate(90deg)';
+}
+function updateIMG(key,val){
+  IMG[key]=val;
+  if(key==='LOGO')document.getElementById('hdr-logo').src=val;
+  render();
+}
+function updPrev(id,url){
+  const el=document.getElementById(id);if(!el)return;
+  if(url){el.src=url;el.style.display='block';}else{el.style.display='none';}
+}
+
+// ─ EDITOR RENDERERS ───────────────────────────────────────
+function edHero(b){const d=b.data,id=b.id;return`
+<div class="fr"><label class="fl">大標題</label><textarea class="fta" style="min-height:52px" oninput="setF('${id}','title',this.value)">${esc(d.title)}</textarea></div>
+<div class="fr"><label class="fl">Hero 圖片連結 <span style="color:var(--g500);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">（建議 1040×624px）</span></label>
+<input class="fi" type="url" value="${esc(d.imgSrc)}" oninput="setF('${id}','imgSrc',this.value);updPrev('hprev_${id}',this.value)" placeholder="https://">
+<img id="hprev_${id}" class="upld-prev" src="${d.imgSrc||''}" style="margin-top:7px;${d.imgSrc?'':'display:none'}"></div>
+<div class="fr"><label class="fl">圖片 Alt 文字</label><input class="fi" type="text" value="${esc(d.imgAlt)}" oninput="setF('${id}','imgAlt',this.value)" placeholder="圖片替代說明"></div>
+<div class="fr"><label class="fl">內文</label><textarea class="fta" oninput="setF('${id}','body',this.value)">${esc(d.body)}</textarea></div>
+<div class="divl"><div class="divl-l"></div><span class="divl-t">CTA 按鈕</span><div class="divl-l"></div></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">按鈕文字</label><input class="fi" type="text" value="${esc(d.ctaText)}" oninput="setF('${id}','ctaText',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl">按鈕連結</label><input class="fi" type="url" value="${esc(d.ctaUrl)}" oninput="setF('${id}','ctaUrl',this.value)" placeholder="https://"></div>
+</div>`}
+
+function edFCenter(b){const d=b.data,id=b.id;return`
+<div class="fr"><label class="fl">區塊標題</label><input class="fi" type="text" value="${esc(d.sTitle)}" oninput="setF('${id}','sTitle',this.value)"></div>
+<div class="divl"><div class="divl-l"></div><span class="divl-t">功能項目（可新增／刪除）</span><div class="divl-l"></div></div>
+${d.items.map((fi,i)=>`<div class="fitem"><div class="fitem-hdr"><span class="fitem-lbl">項目 ${i+1}</span><button class="fitem-del" onclick="delFI('${id}','${fi.id}')">✕</button></div>
+<div class="fitem-body">
+<div class="fr"><label class="fl">小標題</label><input class="fi" type="text" value="${esc(fi.subtitle)}" oninput="setFI('${id}','${fi.id}','subtitle',this.value)"></div>
+<div class="fr"><label class="fl">內文</label><textarea class="fta" oninput="setFI('${id}','${fi.id}','body',this.value)">${esc(fi.body)}</textarea></div>
+<div class="f2"><div class="fr" style="margin:0"><label class="fl">連結文字</label><input class="fi" type="text" value="${esc(fi.linkText)}" oninput="setFI('${id}','${fi.id}','linkText',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl">連結 URL</label><input class="fi" type="url" value="${esc(fi.linkUrl)}" oninput="setFI('${id}','${fi.id}','linkUrl',this.value)" placeholder="https://"></div></div>
+<div class="fr" style="margin-top:10px"><label class="fl">圖片連結 <span style="color:var(--g500);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">（建議 1040×624px）</span></label>
+<input class="fi" type="url" value="${esc(fi.imgSrc)}" oninput="setFI('${id}','${fi.id}','imgSrc',this.value);updPrev('fcprev_${id}_${fi.id}',this.value)" placeholder="https://">
+<img id="fcprev_${id}_${fi.id}" class="upld-prev" src="${fi.imgSrc||''}" style="margin-top:7px;${fi.imgSrc?'':'display:none'}"></div>
+</div></div>`).join('')}
+<button class="btn-add-fi" onclick="addFI('${id}')">+ 新增功能項目</button>`}
+
+function edFSide(b){const d=b.data,id=b.id;return`
+<div class="fr"><label class="fl">區塊標題</label><input class="fi" type="text" value="${esc(d.sTitle)}" oninput="setF('${id}','sTitle',this.value)"></div>
+<div class="divl"><div class="divl-l"></div><span class="divl-t">功能項目（圖文並排，可新增／刪除）</span><div class="divl-l"></div></div>
+${d.items.map((fi,i)=>`<div class="fitem"><div class="fitem-hdr"><span class="fitem-lbl">項目 ${i+1}</span><button class="fitem-del" onclick="delFI('${id}','${fi.id}')">✕</button></div>
+<div class="fitem-body">
+<div class="fr"><label class="fl">圖片連結 <span style="color:var(--g500);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px">（建議 400x400px）</span></label>
+<input class="fi" type="url" value="${esc(fi.imgSrc)}" oninput="setFI('${id}','${fi.id}','imgSrc',this.value);updPrev('fprev_${id}_${fi.id}',this.value)" placeholder="https://">
+<img id="fprev_${id}_${fi.id}" class="upld-prev" src="${fi.imgSrc||''}" style="margin-top:7px;${fi.imgSrc?'':'display:none'}"></div>
+<div class="fr"><label class="fl">標題</label><input class="fi" type="text" value="${esc(fi.subtitle)}" oninput="setFI('${id}','${fi.id}','subtitle',this.value)"></div>
+<div class="fr"><label class="fl">內文</label><textarea class="fta" oninput="setFI('${id}','${fi.id}','body',this.value)">${esc(fi.body)}</textarea></div>
+<div class="f2"><div class="fr" style="margin:0"><label class="fl">連結文字</label><input class="fi" type="text" value="${esc(fi.linkText)}" oninput="setFI('${id}','${fi.id}','linkText',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl">連結 URL</label><input class="fi" type="url" value="${esc(fi.linkUrl)}" oninput="setFI('${id}','${fi.id}','linkUrl',this.value)" placeholder="https://"></div></div>
+</div></div>`).join('')}
+<button class="btn-add-fi" onclick="addFI('${id}')">+ 新增功能項目</button>`}
+
+function edPricing(b){const d=b.data,id=b.id;
+const hdrClass=['pro','team','ent'];
+const hdrLabel=['PRO 方案','TEAM 方案','ENTERPRISE'];
+return`
+<div class="fr"><label class="fl">區塊標題</label><input class="fi" type="text" value="${esc(d.sTitle)}" oninput="setF('${id}','sTitle',this.value)"></div>
+<div class="divl"><div class="divl-l"></div><span class="divl-t">方案卡片（Icon 圖片固定）</span><div class="divl-l"></div></div>
+<div class="pc-grid">${d.cards.map((c,i)=>`<div class="pc-card">
+<div class="pc-hdr ${hdrClass[i]}"><img id="pcico_${id}_${i}" style="height:16px"> ${hdrLabel[i]}</div>
+<div class="pc-bd">
+<div class="fr"><label class="fl" style="font-size:9px">方案名稱</label><input class="fi" style="font-size:12px" type="text" value="${esc(c.title)}" oninput="setPC('${id}',${i},'title',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl" style="font-size:9px">描述（Enter 換行）</label><textarea class="fta" style="min-height:52px;font-size:12px" oninput="setPC('${id}',${i},'body',this.value)">${esc(c.body)}</textarea></div>
+</div></div>`).join('')}</div>
+<div class="divl" style="margin-top:12px"><div class="divl-l"></div><span class="divl-t">底部連結</span><div class="divl-l"></div></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">連結文字</label><input class="fi" type="text" value="${esc(d.ctaText)}" oninput="setF('${id}','ctaText',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl">連結 URL</label><input class="fi" type="url" value="${esc(d.ctaUrl)}" oninput="setF('${id}','ctaUrl',this.value)" placeholder="https://"></div>
+</div>`}
+
+function edSupport(b){const d=b.data,id=b.id;return`
+<div class="fr"><label class="fl">標題</label><input class="fi" type="text" value="${esc(d.title)}" oninput="setF('${id}','title',this.value)"></div>
+<div class="fr"><label class="fl">內文</label><textarea class="fta" oninput="setF('${id}','body',this.value)">${esc(d.body)}</textarea></div>
+<div class="divl"><div class="divl-l"></div><span class="divl-t">並排連結</span><div class="divl-l"></div></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">連結 1 文字</label><input class="fi" type="text" value="${esc(d.l1t)}" oninput="setF('${id}','l1t',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl">連結 1 URL</label><input class="fi" type="url" value="${esc(d.l1u)}" oninput="setF('${id}','l1u',this.value)" placeholder="https://"></div>
+</div><div style="height:8px"></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">連結 2 文字</label><input class="fi" type="text" value="${esc(d.l2t)}" oninput="setF('${id}','l2t',this.value)"></div>
+<div class="fr" style="margin:0"><label class="fl">連結 2 URL</label><input class="fi" type="url" value="${esc(d.l2u)}" oninput="setF('${id}','l2u',this.value)" placeholder="https://"></div>
+</div>`}
+
+function edFooter(b){const d=b.data,id=b.id;return`
+<div class="divl"><div class="divl-l"></div><span class="divl-t">社群連結</span><div class="divl-l"></div></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">Facebook URL</label><input class="fi" type="url" value="${esc(d.fbUrl)}" oninput="setF('${id}','fbUrl',this.value)" placeholder="https://"></div>
+<div class="fr" style="margin:0"><label class="fl">Instagram URL</label><input class="fi" type="url" value="${esc(d.igUrl)}" oninput="setF('${id}','igUrl',this.value)" placeholder="https://"></div>
+</div><div style="height:8px"></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">YouTube URL</label><input class="fi" type="url" value="${esc(d.ytUrl)}" oninput="setF('${id}','ytUrl',this.value)" placeholder="https://"></div>
+<div class="fr" style="margin:0"><label class="fl">LinkedIn URL</label><input class="fi" type="url" value="${esc(d.liUrl)}" oninput="setF('${id}','liUrl',this.value)" placeholder="https://"></div>
+</div>
+<div class="divl" style="margin-top:8px"><div class="divl-l"></div><span class="divl-t">底部連結</span><div class="divl-l"></div></div>
+<div class="f2">
+<div class="fr" style="margin:0"><label class="fl">意見回饋 URL</label><input class="fi" type="url" value="${esc(d.feedbackUrl)}" oninput="setF('${id}','feedbackUrl',this.value)" placeholder="https://"></div>
+<div class="fr" style="margin:0"><label class="fl">取消訂閱 URL</label><input class="fi" type="url" value="${esc(d.unsubUrl)}" oninput="setF('${id}','unsubUrl',this.value)" placeholder="{{unsubscribe_url}}"></div>
+</div>
+<div style="margin-top:10px;padding:8px;background:var(--g75);border-radius:4px;font-size:11px;color:var(--g500)">版權聲明與社群圖示固定顯示，以上連結可編輯</div>`}
+
+// ─ CANVAS RENDER ──────────────────────────────────────────
+function render(){
+  const cont=document.getElementById('blocks');
+  const empty=document.getElementById('empty');
+  if(!blocks.length){empty.style.display='flex';cont.innerHTML='';return}
+  empty.style.display='none';
+  const editors={hero:edHero,fcenter:edFCenter,fside:edFSide,pricing:edPricing,support:edSupport,footer:(b)=>edFooter(b)};
+  cont.innerHTML=blocks.map((b,i)=>{
+    const m=META[b.type],isF=i===0,isL=i===blocks.length-1;
+    return`<div class="blk${b.open?'':' collapsed'}" id="bc_${b.id}">
+<div class="blk-hdr" onclick="toggle('${b.id}')">
+<span class="blk-ico">${m.ico}</span><span class="blk-name">${m.name}</span>
+<div class="blk-acts" onclick="event.stopPropagation()">
+${!isF?`<button class="bb" title="上移" onclick="moveBlock('${b.id}','up')">↑</button>`:''}
+${!isL?`<button class="bb" title="下移" onclick="moveBlock('${b.id}','dn')">↓</button>`:''}
+<button class="bb del" title="刪除" onclick="removeBlock('${b.id}')">✕</button>
+<span class="chevron">${b.open?'▼':'▶'}</span>
+</div></div>
+<div class="blk-body">${editors[b.type]?.(b)||''}</div>
+</div>`;
+  }).join('');
+  // set pricing icons
+  blocks.forEach(b=>{
+    if(b.type==='pricing'){
+      const icons=[IMG.PRO,IMG.TEAM,IMG.ENT];
+      b.data.cards.forEach((_,i)=>{const el=document.getElementById(`pcico_${b.id}_${i}`);if(el)el.src=icons[i];});
+    }
+  });
+}
+
+// ─ EMAIL HTML GENERATORS ─────────────────────────────────
+// Styles shared
+const S={
+  card:'width:600px;max-width:600px;background-color:#FFFFFF;border-radius:24px;overflow:hidden;',
+  sTitle:'font-family:\'Noto Sans TC\',\'Microsoft JhengHei\',Arial,sans-serif;font-size:36px;font-weight:600;line-height:1.5;color:#11303C;text-align:center;',
+  fSubC:'font-family:\'Noto Sans TC\',\'Microsoft JhengHei\',Arial,sans-serif;font-size:28px;font-style:normal;font-weight:600;line-height:normal;color:#11303C;text-align:center;',
+  fSubS:'font-family:\'Noto Sans TC\',\'Microsoft JhengHei\',Arial,sans-serif;font-size:24px;font-weight:500;line-height:1.5;color:#11303C;text-align:left;',
+  body:'font-family:\'Noto Sans TC\',\'Microsoft JhengHei\',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.75;color:#11303C;',
+  bodyC:'font-family:\'Noto Sans TC\',\'Microsoft JhengHei\',Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.75;color:#11303C;text-align:center;',
+  link:'font-family:\'Noto Sans TC\',\'Microsoft JhengHei\',Arial,sans-serif;font-size:18px;font-style:normal;font-weight:500;color:#009974;text-decoration:underline;',
+  imgPH:(w,h)=>`<table role="presentation" width="${w}" cellpadding="0" cellspacing="0" border="0"><tr><td width="${w}" height="${h}" bgcolor="#F3F4F5" style="border-radius:20px;font-size:0;">&nbsp;</td></tr></table>`,
+  spacer:(h)=>`<tr><td height="${h}" style="font-size:0;line-height:0;">&nbsp;</td></tr>`,
+};
+
+function genHero(d){
+  const imgRow=d.imgSrc
+    ?`<img src="${d.imgSrc}" alt="${esc(d.imgAlt)}" width="520" style="display:block;max-width:520px;width:100%;height:auto;border-radius:20px;border:0;" />`
+    :S.imgPH(520,312);
+  return`\n  <!-- HERO -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
+    <tr><td align="center" style="padding:60px 40px;">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+        <tr><td align="center" style="padding:0 0 40px;">
+          <img src="${IMG.LOGO}" alt="SurveyCake" width="175" style="display:block;border:0;max-width:230px;">
+        </td></tr>
+        <tr><td align="center" style="padding:0 0 40px;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:40px;font-weight:700;line-height:1.5;color:#11303C;text-align:center;">${nl2br(d.title)}</td></tr>
+        <tr><td align="center" style="padding:0 0 40px;">${imgRow}</td></tr>
+        <tr><td align="center" style="padding:0 0 40px;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:20px;font-weight:500;line-height:1.6;color:#11303C;text-align:center;">${nl2br(d.body)}</td></tr>
+        <tr><td align="center"><a href="${d.ctaUrl}" target="_blank" style="display:inline-block;background-color:#3DBA90;color:#FFFFFF;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:16px;font-weight:500;text-decoration:none;padding:12px 24px;border-radius:8px;">${esc(d.ctaText)}</a></td></tr>
+      </table>
+    </td></tr>
+  </table>`;
+}
+
+function genFCenter(d){
+  const items=d.items.map((fi,i)=>{
+    const div=i>0?`${S.spacer(40)}<tr><td style="border-top:1px solid #EEEEEE;font-size:0;padding:0;">&nbsp;</td></tr>${S.spacer(40)}`:'';
+    return`${div}
+        <tr><td align="center" style="padding:0 0 24px;${S.fSubC}">${nl2br(fi.subtitle)}</td></tr>
+        <tr><td align="center" style="padding:0 0 24px;${S.bodyC}">${nl2br(fi.body)}</td></tr>
+        <tr><td align="center" style="padding:0 0 ${fi.imgSrc?'24px':'0'};"><a href="${fi.linkUrl}" target="_blank" style="${S.link}">${esc(fi.linkText)} →</a></td></tr>
+        ${fi.imgSrc?`<tr><td align="center" style="padding:0;"><img src="${fi.imgSrc}" alt="${esc(fi.subtitle)}" width="520" style="display:block;max-width:520px;width:100%;height:auto;border-radius:12px;border:0;"></td></tr>`:''}` ;
+  }).join('');
+  return`\n  <!-- FEATURE CENTER -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
+    <tr><td align="center" style="padding:60px 40px 40px;">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+        <tr><td align="center" style="padding:0 0 48px;${S.sTitle}">${esc(d.sTitle)}</td></tr>
+        ${items}
+      </table>
+    </td></tr>
+  </table>`;
+}
+
+function genFSide(d){
+  const items=d.items.map((fi,i)=>{
+    const sep=i>0?`${S.spacer(40)}<tr><td style="border-top:1px solid #EEEEEE;font-size:0;padding:0;">&nbsp;</td></tr>${S.spacer(40)}`:'';
+    const imgCell=fi.imgSrc
+      ?`<img src="${fi.imgSrc}" alt="${esc(fi.imgAlt)}" width="200" height="200" style="display:block;border-radius:12px;border:0;width:200px;height:200px;object-fit:cover;">`
+      :S.imgPH(200,200);
+    return`${sep}
+        <tr><td style="padding:0;">
+          <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+            <tr valign="top">
+              <td width="200" style="width:200px;vertical-align:top;">${imgCell}</td>
+              <td width="32" style="width:32px;font-size:0;">&nbsp;</td>
+              <td style="vertical-align:top;">
+                <p style="margin:0 0 12px;${S.fSubS}">${nl2br(fi.subtitle)}</p>
+                <p style="margin:0 0 16px;${S.body}text-align:left;">${nl2br(fi.body)}</p>
+                <a href="${fi.linkUrl}" target="_blank" style="${S.link};text-align:left;">${esc(fi.linkText)} →</a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>`;
+  }).join('');
+  return`\n  <!-- FEATURE SIDE -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
+    <tr><td align="center" style="padding:60px 40px 40px;">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+        <tr><td align="center" style="padding:0 0 48px;${S.sTitle}">${esc(d.sTitle)}</td></tr>
+        ${items}
+      </table>
+    </td></tr>
+  </table>`;
+}
+
+function genPricing(d){
+  const pcfg=[
+    {bg:'#E6F7F1',tc:'#009974',src:IMG.PRO},
+    {bg:'#FEF2DD',tc:'#E2A32F',src:IMG.TEAM},
+    {bg:'#FDE5E9',tc:'#C9354D',src:IMG.ENT},
+  ];
+  const cards=d.cards.map((c,i)=>`
+    <td width="157" valign="top" style="width:157px;background-color:${pcfg[i].bg};border-radius:12px;padding:40px 14px;text-align:center;vertical-align:top;">
+      <img src="${pcfg[i].src}" width="32" height="32" alt="${esc(c.title)}" style="display:block;margin:0 auto 20px;border:0;">
+      <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;line-height:1.5;color:${pcfg[i].tc};text-align:center;">${esc(c.title)}</p>
+      <p style="margin:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.65;color:#11303C;text-align:center;">${nl2br(c.body)}</p>
+    </td>`).join(`<td width="24" style="width:24px;font-size:0;">&nbsp;</td>`);
+  return`\n  <!-- PRICING -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
+    <tr><td align="center" style="padding:60px 40px 40px;">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+        <tr><td align="center" style="padding:0 0 36px;${S.sTitle}">${esc(d.sTitle)}</td></tr>
+        <tr><td style="padding:0 0 32px;">
+          <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0"><tr valign="top">${cards}</tr></table>
+        </td></tr>
+        <tr><td align="center"><a href="${d.ctaUrl}" target="_blank" style="${S.link}">${esc(d.ctaText)} →</a></td></tr>
+      </table>
+    </td></tr>
+  </table>`;
+}
+
+function genSupport(d){return`\n  <!-- SUPPORT -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
+    <tr><td align="center" style="padding:60px 40px;">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+        <tr><td align="center" style="padding:0 0 28px;${S.sTitle}">${esc(d.title)}</td></tr>
+        <tr><td align="center" style="padding:0 0 28px;${S.bodyC}">${nl2br(d.body)}</td></tr>
+        <tr><td align="center" style="padding:0 0 40px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+            <td><a href="${d.l1u}" target="_blank" style="${S.link}">${esc(d.l1t)}</a></td>
+            <td style="padding:0 20px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td width="1" height="20" bgcolor="#EEEEEE" style="font-size:0;">&nbsp;</td></tr></table></td>
+            <td><a href="${d.l2u}" target="_blank" style="${S.link}">${esc(d.l2t)}</a></td>
+          </tr></table>
+        </td></tr>
+        <tr><td align="center"><img src="${IMG.LOGO}" alt="SurveyCake" width="130" height="32" style="display:block;border:0;margin:0 auto;"></td></tr>
+      </table>
+    </td></tr>
+  </table>`;}
+
+function genFooter(d){return`\n  <!-- FOOTER -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center">
+    <tr><td align="center" style="padding:36px 40px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+        ${[{s:IMG.FB,u:d.fbUrl,a:'Facebook'},
+           {s:IMG.IG,u:d.igUrl,a:'Instagram'},
+           {s:IMG.YT,u:d.ytUrl,a:'YouTube'},
+           {s:IMG.LI,u:d.liUrl,a:'LinkedIn'}]
+          .map(x=>`<td style="padding:0 10px;"><a href="${x.u}" target="_blank" style="display:inline-block;text-decoration:none;"><img src="${x.s}" alt="${x.a}" width="32" height="32" style="display:block;border:0;border-radius:8px;"></a></td>`).join('')}
+      </tr></table>
+    </td></tr>
+    <tr><td align="center" style="padding:0 40px 10px;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.75;color:#6B6B6B;text-align:center;">
+      SurveyCake | 企業級雲端問卷服務<br>©︎ 2026 SurveyCake, all rights reserved.<br>Created by 25sprout.
+    </td></tr>
+    <tr><td align="center" style="padding:0 40px 40px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr>
+        <td><a href="${d.feedbackUrl}" target="_blank" style="font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:14px;font-weight:400;color:#6B6B6B;text-decoration:underline;">意見回饋</a></td>
+        <td style="padding:0 14px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td width="1" height="14" bgcolor="#BDBDBD" style="font-size:0;">&nbsp;</td></tr></table></td>
+        <td><a href="${d.unsubUrl}" style="font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:14px;font-weight:400;color:#6B6B6B;text-decoration:underline;">取消訂閱</a></td>
+      </tr></table>
+    </td></tr>
+  </table>`;}
+
+// ─ GENERATE & DOWNLOAD ────────────────────────────────────
+const SPACER24='\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td height="24" style="font-size:0;line-height:0;">&nbsp;</td></tr></table>\n';
+
+function generateEDM(){
+  if(!blocks.length){alert('請先新增至少一個區塊！');return}
+  const GEN={hero:genHero,fcenter:genFCenter,fside:genFSide,pricing:genPricing,support:genSupport,footer:genFooter};
+  const body=blocks.map(b=>GEN[b.type]?.(b.data)||'').join(SPACER24);
+  const html=`<!DOCTYPE html>
+<html lang="zh-TW" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="x-apple-disable-message-reformatting"/>
+  <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no"/>
+  <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+    *{box-sizing:border-box;}
+    body,#wrap{margin:0!important;padding:0!important;width:100%!important;}
+    body{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:#F3F4F5;}
+    img{border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;}
+    table{border-collapse:collapse!important;mso-table-lspace:0pt;mso-table-rspace:0pt;}
+    a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;}
+    @media only screen and (max-width:640px){
+      .ec{width:100%!important;max-width:100%!important;}
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F3F4F5;" id="wrap">
+<div role="article" aria-roledescription="email" lang="zh-TW">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" bgcolor="#F3F4F5" style="background:#F3F4F5;">
+  <tr><td align="center" style="padding:40px 0;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" align="center" class="ec" style="width:600px;max-width:600px;">
+      <tr><td>
+${body}
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</div>
+</body>
+</html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const dt=new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.download=`SurveyCake_EDM_${dt}.html`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+// ─ INIT ──────────────────────────────────────────────────
+document.getElementById('hdr-logo').src = IMG.LOGO;
+// populate image config inputs with defaults
+const cfgMap={logo:'LOGO',pro:'PRO',team:'TEAM',ent:'ENT',fb:'FB',ig:'IG',yt:'YT',li:'LI'};
+Object.entries(cfgMap).forEach(([k,v])=>{const el=document.getElementById('cfg-'+k);if(el)el.value=IMG[v];});
+render();
+</script>
+</body>
+</html>
