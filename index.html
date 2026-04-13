@@ -105,6 +105,11 @@ body{font-family:var(--font);background:var(--g75);color:var(--g900);height:100v
 /* ─ footer preview ─ */
 .footer-prev{background:var(--g75);border:1px dashed var(--g300);border-radius:6px;padding:14px;text-align:center;color:var(--g600);font-size:12px;line-height:1.7}
 .footer-prev strong{color:var(--g800)}
+
+/* ─ letter block ─ */
+.fhint{font-size:10px;color:var(--g500);line-height:1.5;margin-top:4px}
+.btn-add-cta{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px;background:#fff;color:var(--pd);border:1.5px dashed var(--p);border-radius:5px;font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;width:100%;margin-top:8px;transition:all .14s}
+.btn-add-cta:hover{background:var(--pl);border-style:solid}
 </style>
 </head>
 <body>
@@ -162,6 +167,11 @@ body{font-family:var(--font);background:var(--g75);color:var(--g900);height:100v
       <div class="btc-info"><div class="btc-name">支援卡片</div><div class="btc-desc">標題、內文、兩個連結</div></div>
       <button class="btc-add" onclick="event.stopPropagation();addBlock('support')">+</button>
     </div>
+    <div class="btc" onclick="addBlock('letter')">
+      <div class="btc-ico">✉️</div>
+      <div class="btc-info"><div class="btc-name">信件</div><div class="btc-desc">Logo、標題、段落、CTA、署名</div></div>
+      <button class="btc-add" onclick="event.stopPropagation();addBlock('letter')">+</button>
+    </div>
     <div class="btc" onclick="addBlock('footer')">
       <div class="btc-ico">📋</div>
       <div class="btc-info"><div class="btc-name">Footer（固定內容）</div><div class="btc-desc">Social、版權、取消訂閱</div></div>
@@ -209,6 +219,7 @@ const META = {
   fside:   {name:'功能介紹（圖文並排）', ico:'🖼️'},
   pricing: {name:'方案卡片',             ico:'💳'},
   support: {name:'支援卡片',             ico:'💬'},
+  letter:  {name:'信件',                    ico:'✉️'},
   footer:  {name:'Footer（固定）',       ico:'📋'},
 };
 
@@ -218,6 +229,7 @@ const DEFS = {
   fside:{sTitle:'功能區塊標題',items:[{id:'fi1',imgSrc:'',imgAlt:'',subtitle:'功能小標題',body:'功能說明文字',linkText:'了解更多',linkUrl:'https://www.surveycake.com'}]},
   pricing:{sTitle:'方案區塊標題',ctaText:'查看方案比較',ctaUrl:'https://www.surveycake.com/pricing',cards:[{title:'PRO',body:'進階數據深入分析\n讓填答即刻轉化為實際收益'},{title:'TEAM',body:'啟動協作機制\n結合團隊力量創造 3 倍綜效'},{title:'ENTERPRISE',body:'最高規格資安保護\n多方串接及量身打造客製化'}]},
   support:{title:'遇到問題，我們在這裡 💪🏻',body:'想先了解不同建立方式？查看問卷設計完整指南，從頭到尾帶你走一遍。\n操作上有任何疑問，後台支援中心隨時可以聯絡我們——不用自己摸索。',l1t:'查看使用教學',l1u:'https://help.surveycake.com',l2t:'前往支援中心',l2u:'https://support.surveycake.com'},
+  letter:{logoUrl:'https://raw.githubusercontent.com/bonnie729/edm-assets/main/SurveyCake_Logo.png',title:'嗨 {{contact.firstname}}，',items:[{type:'para',id:'lp1',text:''},{type:'cta',id:'lc1',linkText:'了解更多',linkUrl:'https://www.surveycake.com'},{type:'para',id:'lp2',text:''}],signature:''},
   footer:{fbUrl:'https://www.facebook.com/surveycake',igUrl:'https://www.instagram.com/surveycake',ytUrl:'https://www.youtube.com/@surveycake',liUrl:'https://www.linkedin.com/company/surveycake',feedbackUrl:'https://www.surveycake.com/feedback',unsubUrl:'{{unsubscribe_url}}'}
 };
 
@@ -247,6 +259,33 @@ function delFI(bid,fid){
   const b=blocks.find(b=>b.id===bid);
   if(!b||b.data.items.length<=1)return;
   b.data.items=b.data.items.filter(i=>i.id!==fid);render();
+}
+function setLetterItem(bid,itemId,key,val){const b=blocks.find(b=>b.id===bid);if(!b)return;const it=b.data.items.find(i=>i.id===itemId);if(it)it[key]=val}
+function addLetterPara(bid,afterId){
+  const b=blocks.find(b=>b.id===bid);if(!b)return;
+  const it={type:'para',id:'lp'+(++ficnt),text:''};
+  if(!afterId){b.data.items.push(it);}
+  else{const idx=b.data.items.findIndex(i=>i.id===afterId);b.data.items.splice(idx+1,0,it);}
+  render();
+}
+function addLetterCTA(bid,afterId){
+  const b=blocks.find(b=>b.id===bid);if(!b)return;
+  const it={type:'cta',id:'lc'+(++ficnt),linkText:'了解更多',linkUrl:'https://www.surveycake.com'};
+  const idx=b.data.items.findIndex(i=>i.id===afterId);
+  b.data.items.splice(idx+1,0,it);render();
+}
+function delLetterItem(bid,itemId){
+  const b=blocks.find(b=>b.id===bid);if(!b)return;
+  const item=b.data.items.find(i=>i.id===itemId);
+  if(item?.type==='para'&&b.data.items.filter(i=>i.type==='para').length<=1)return;
+  b.data.items=b.data.items.filter(i=>i.id!==itemId);render();
+}
+function moveLetterItem(bid,itemId,dir){
+  const b=blocks.find(b=>b.id===bid);if(!b)return;
+  const items=b.data.items,idx=items.findIndex(i=>i.id===itemId);
+  if(dir==='up'&&idx>0)[items[idx-1],items[idx]]=[items[idx],items[idx-1]];
+  else if(dir==='dn'&&idx<items.length-1)[items[idx],items[idx+1]]=[items[idx+1],items[idx]];
+  render();
 }
 
 // ─ IMAGE URL HELPERS ─────────────────────────────────────
@@ -342,6 +381,32 @@ function edSupport(b){const d=b.data,id=b.id;return`
 <div class="fr" style="margin:0"><label class="fl">連結 2 URL</label><input class="fi" type="url" value="${esc(d.l2u)}" oninput="setF('${id}','l2u',this.value)" placeholder="https://"></div>
 </div>`}
 
+function renderLetterItems(id,d){
+  let pc=0;
+  return d.items.map((it,i)=>{
+    const isF=i===0,isL=i===d.items.length-1;
+    const acts='<div style="display:flex;gap:4px;flex-shrink:0">'
+      +(!isF?`<button class="bb" onclick="moveLetterItem('${id}','${it.id}','up')">↑</button>`:'<span style="width:26px"></span>')
+      +' '
+      +(!isL?`<button class="bb" onclick="moveLetterItem('${id}','${it.id}','dn')">↓</button>`:'<span style="width:26px"></span>')
+      +` <button class="bb del" onclick="delLetterItem('${id}','${it.id}')">✕</button></div>`;
+    if(it.type==='para'){
+      pc++;
+      return `<div class="fitem"><div class="fitem-hdr"><span class="fitem-lbl">段落 ${pc}</span>${acts}</div><div class="fitem-body"><textarea class="fta" oninput="setLetterItem('${id}','${it.id}','text',this.value)">${esc(it.text)}</textarea><div class="fhint">插入收件人姓名請輸入 {{contact.firstname}}｜粗體請使用 &lt;b&gt;文字&lt;/b&gt;</div><button class="btn-add-cta" onclick="addLetterCTA('${id}','${it.id}')">+ 在此段落後插入 CTA 連結</button></div></div>`;
+    } else {
+      return `<div class="fitem" style="border-color:var(--p)"><div class="fitem-hdr" style="background:var(--pl)"><span class="fitem-lbl" style="color:var(--pd)">CTA 連結</span>${acts}</div><div class="fitem-body"><div class="f2"><div class="fr" style="margin:0"><label class="fl">連結文字</label><input class="fi" type="text" value="${esc(it.linkText)}" oninput="setLetterItem('${id}','${it.id}','linkText',this.value)"></div><div class="fr" style="margin:0"><label class="fl">連結 URL</label><input class="fi" type="url" value="${esc(it.linkUrl)}" oninput="setLetterItem('${id}','${it.id}','linkUrl',this.value)" placeholder="https://"></div></div></div></div>`;
+    }
+  }).join('');
+}
+function edLetter(b){const d=b.data,id=b.id;return`
+<div class="fr"><label class="fl">Logo 連結</label><input class="fi" type="url" value="${esc(d.logoUrl)}" oninput="setF('${id}','logoUrl',this.value)" placeholder="https://"></div>
+<div class="fr"><label class="fl">標題</label><textarea class="fta" style="min-height:52px" oninput="setF('${id}','title',this.value)">${esc(d.title)}</textarea><div class="fhint">插入收件人姓名請輸入 {{contact.firstname}}，例如：嗨 {{contact.firstname}}，我是 Alex</div></div>
+<div class="divl"><div class="divl-l"></div><span class="divl-t">段落與 CTA（可新增／刪除／調整順序）</span><div class="divl-l"></div></div>
+${renderLetterItems(id,d)}
+<button class="btn-add-fi" onclick="addLetterPara('${id}','')">+ 新增段落</button>
+<div class="divl" style="margin-top:10px"><div class="divl-l"></div><span class="divl-t">署名</span><div class="divl-l"></div></div>
+<div class="fr" style="margin:0"><label class="fl">署名（每行輸入一行，第一行為姓名）</label><textarea class="fta" style="min-height:62px" oninput="setF('${id}','signature',this.value)">${esc(d.signature)}</textarea></div>`}
+
 function edFooter(b){const d=b.data,id=b.id;return`
 <div class="divl"><div class="divl-l"></div><span class="divl-t">社群連結</span><div class="divl-l"></div></div>
 <div class="f2">
@@ -365,7 +430,7 @@ function render(){
   const empty=document.getElementById('empty');
   if(!blocks.length){empty.style.display='flex';cont.innerHTML='';return}
   empty.style.display='none';
-  const editors={hero:edHero,fcenter:edFCenter,fside:edFSide,pricing:edPricing,support:edSupport,footer:(b)=>edFooter(b)};
+  const editors={hero:edHero,fcenter:edFCenter,fside:edFSide,pricing:edPricing,support:edSupport,letter:edLetter,footer:(b)=>edFooter(b)};
   cont.innerHTML=blocks.map((b,i)=>{
     const m=META[b.type],isF=i===0,isL=i===blocks.length-1;
     return`<div class="blk${b.open?'':' collapsed'}" id="bc_${b.id}">
@@ -514,6 +579,35 @@ function genSupport(d){return`\n  <!-- SUPPORT -->\n  <table role="presentation"
     </td></tr>
   </table>`;}
 
+function letterText(s){
+  return esc(s).replace(/&lt;b&gt;/g,'<b>').replace(/&lt;\/b&gt;/g,'</b>').replace(/\n/g,'<br>');
+}
+function genLetter(d){
+  const logoSrc=d.logoUrl||IMG.LOGO;
+  const rows=[];
+  rows.push(`<tr><td style="padding:0 0 40px;text-align:left;"><img src="${logoSrc}" alt="SurveyCake" width="175" style="display:block;border:0;max-width:230px;"></td></tr>`);
+  if(d.title) rows.push(`<tr><td style="padding:0 0 32px;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:28px;font-weight:600;line-height:normal;color:#11303C;">${letterText(d.title)}</td></tr>`);
+  d.items.forEach(it=>{
+    if(it.type==='para'&&it.text){
+      rows.push(`<tr><td style="padding:0 0 32px;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:16px;font-weight:400;line-height:24px;color:#11303C;">${letterText(it.text)}</td></tr>`);
+    } else if(it.type==='cta'&&it.linkText&&it.linkUrl){
+      rows.push(`<tr><td style="padding:0 0 32px;"><a href="${it.linkUrl}" target="_blank" style="font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:20px;font-weight:500;line-height:24px;color:#009974;text-decoration:underline;">${esc(it.linkText)} →</a></td></tr>`);
+    }
+  });
+  if(d.signature){
+    const lines=d.signature.split('\n');
+    const sigLines=lines.map((ln,i)=>`<p style="margin:${i>0?'4px':'0'} 0 0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:${i===0?'18px':'16px'};font-weight:${i===0?'500':'400'};line-height:${i===0?'28px':'24px'};color:#11303C;">${esc(ln)}</p>`).join('');
+    rows.push(`<tr><td style="padding:32px 0 0;">${sigLines}</td></tr>`);
+  }
+  return `\n  <!-- LETTER -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
+    <tr><td style="padding:60px 40px;">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+        ${rows.join('\n        ')}
+      </table>
+    </td></tr>
+  </table>`;
+}
+
 function genFooter(d){return`\n  <!-- FOOTER -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center">
     <tr><td align="center" style="padding:36px 40px 16px;">
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
@@ -541,7 +635,7 @@ const SPACER24='\n  <table role="presentation" width="600" cellpadding="0" cells
 
 function generateEDM(){
   if(!blocks.length){alert('請先新增至少一個區塊！');return}
-  const GEN={hero:genHero,fcenter:genFCenter,fside:genFSide,pricing:genPricing,support:genSupport,footer:genFooter};
+  const GEN={hero:genHero,fcenter:genFCenter,fside:genFSide,pricing:genPricing,support:genSupport,letter:genLetter,footer:genFooter};
   const body=blocks.map(b=>GEN[b.type]?.(b.data)||'').join(SPACER24);
   const html=`<!DOCTYPE html>
 <html lang="zh-TW" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
