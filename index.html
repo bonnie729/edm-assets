@@ -514,11 +514,11 @@ function genFSide(d){
       :S.imgPH(200,200);
     return`${sep}
         <tr><td style="padding:0;">
-          <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+          <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" class="rfs">
             <tr valign="top">
-              <td width="200" style="width:200px;vertical-align:top;">${imgCell}</td>
-              <td width="32" style="width:32px;font-size:0;">&nbsp;</td>
-              <td style="vertical-align:top;">
+              <td width="200" class="rfs-i" style="width:200px;vertical-align:top;">${imgCell}</td>
+              <td width="32" class="rfs-g" style="width:32px;font-size:0;">&nbsp;</td>
+              <td class="rfs-t" style="vertical-align:top;">
                 <p style="margin:0 0 12px;${S.fSubS}">${nl2br(fi.subtitle)}</p>
                 <p style="margin:0 0 16px;${S.body}text-align:left;">${nl2br(fi.body)}</p>
                 <a href="${fi.linkUrl}" target="_blank" style="${S.link};text-align:left;">${esc(fi.linkText)} →</a>
@@ -544,17 +544,17 @@ function genPricing(d){
     {bg:'#FDE5E9',tc:'#C9354D',src:IMG.ENT},
   ];
   const cards=d.cards.map((c,i)=>`
-    <td width="157" valign="top" style="width:157px;background-color:${pcfg[i].bg};border-radius:12px;padding:40px 14px;text-align:center;vertical-align:top;">
+    <td width="157" valign="top" class="rpc-c" style="width:157px;background-color:${pcfg[i].bg};border-radius:12px;padding:40px 14px;text-align:center;vertical-align:top;">
       <img src="${pcfg[i].src}" width="32" height="32" alt="${esc(c.title)}" style="display:block;margin:0 auto 20px;border:0;">
       <p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;line-height:1.5;color:${pcfg[i].tc};text-align:center;">${esc(c.title)}</p>
       <p style="margin:0;font-family:'Noto Sans TC','Microsoft JhengHei',Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.65;color:#11303C;text-align:center;">${nl2br(c.body)}</p>
-    </td>`).join(`<td width="24" style="width:24px;font-size:0;">&nbsp;</td>`);
+    </td>`).join(`<td width="24" class="rpc-g" style="width:24px;font-size:0;">&nbsp;</td>`);
   return`\n  <!-- PRICING -->\n  <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center" style="${S.card}">
     <tr><td align="center" style="padding:60px 40px 40px;">
-      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0">
+      <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" class="rpc-t">
         <tr><td align="center" style="padding:0 0 36px;${S.sTitle}">${esc(d.sTitle)}</td></tr>
         <tr><td style="padding:0 0 32px;">
-          <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0"><tr valign="top">${cards}</tr></table>
+          <table role="presentation" width="520" cellpadding="0" cellspacing="0" border="0" class="rpc-t"><tr valign="top">${cards}</tr></table>
         </td></tr>
         <tr><td align="center"><a href="${d.ctaUrl}" target="_blank" style="${S.link}">${esc(d.ctaText)} →</a></td></tr>
       </table>
@@ -644,18 +644,43 @@ function generateEDM(){
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
   <meta name="x-apple-disable-message-reformatting"/>
+  <meta name="color-scheme" content="light only"/>
+  <meta name="supported-color-schemes" content="light only"/>
   <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no"/>
   <!--[if mso]><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
+    :root{color-scheme:light only;}
     *{box-sizing:border-box;}
     body,#wrap{margin:0!important;padding:0!important;width:100%!important;}
     body{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;background-color:#F3F4F5;}
     img{border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;}
     table{border-collapse:collapse!important;mso-table-lspace:0pt;mso-table-rspace:0pt;}
     a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important;}
-    @media only screen and (max-width:640px){
+    /* ── dark mode override ── */
+    [data-ogsc] *{color:inherit!important;background-color:inherit!important;}
+    [data-ogsb] *{background-color:#ffffff!important;}
+    u + .body *{color:inherit!important;background-color:inherit!important;}
+    @media (prefers-color-scheme:dark){
+      body{background-color:#F3F4F5!important;}
+      .email-wrapper{background-color:#ffffff!important;}
+      *{-webkit-text-fill-color:inherit!important;}
+    }
+    /* ── responsive ── */
+    @media only screen and (max-width:600px){
       .ec{width:100%!important;max-width:100%!important;}
+      /* feature-side: stack image above text */
+      .rfs{width:100%!important;}
+      .rfs-i,.rfs-t{display:block!important;width:100%!important;max-width:100%!important;}
+      .rfs-g{display:none!important;max-height:0!important;overflow:hidden!important;}
+      .rfs-i{text-align:center!important;padding-bottom:20px!important;}
+      .rfs-i img{width:100%!important;max-width:280px!important;height:auto!important;margin:0 auto!important;}
+      .rfs-t{text-align:center!important;}
+      .rfs-t p,.rfs-t a{text-align:center!important;}
+      /* pricing: stack cards vertically */
+      .rpc-t{width:100%!important;}
+      .rpc-c{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;margin-bottom:16px!important;}
+      .rpc-g{display:none!important;max-height:0!important;overflow:hidden!important;}
     }
   </style>
 </head>
